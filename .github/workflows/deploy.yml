@@ -1,0 +1,54 @@
+name: Deploy code to github pages
+
+on:
+    push:
+        branches: ["main"]
+    workflow_dispatch:
+
+permissions:
+    contents: read
+    pages: write
+    id-token: write
+
+concurrency:
+    group: "pages"
+    cancel-in-progress: true
+
+jobs:
+    deploy:
+        environment:
+            name: github pages
+            url: ${{ steps.deployment.outputs.page_url}}
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+            
+            - name: Install volta
+              run: curl https://get.volta.sh | bash
+
+            - name: Add volta to path
+              run: echo "$HOME/.volta/bin" >> $GITHUB_PATH
+            
+            - name: Install node and pnpm
+              run: volta install node pnpm
+            
+            - name: Install dependancies
+              run: pnpm install --frozen-lockfile
+            
+            - name: Build
+              run: pnpm run build
+            
+            - name: Set up pages
+              uses: actions/configure-pages@v6
+            
+            - name: Upload artifact
+              uses: actions/upload-pages-artifact@v5
+              with:
+                path: './dist'
+            
+            - name: Deploy to pages
+              id: deployment
+              uses: actions/deploy-pages@v5
+
+

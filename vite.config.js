@@ -1,0 +1,9 @@
+import Inspect from 'vite-plugin-inspect'
+import { qrcode } from 'vite-plugin-qrcode'
+
+export default {
+    plugins: [
+        Inspect(),
+        qrcode()
+    ],
+}
