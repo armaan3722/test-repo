@@ -6,4 +6,5 @@ export default {
         Inspect(),
         qrcode()
     ],
+    base: "/test-repo/"
 }
