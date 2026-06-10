@@ -1,60 +1,143 @@
-import "./style.css";
-import javascriptLogo from "./assets/javascript.svg";
-import viteLogo from "./assets/vite.svg";
-import heroImg from "./assets/hero.png";
-import { setupCounter } from "./counter.js";
+let canvas = document.getElementById('canvas');
+let ctx = canvas.getContext("2d");
 
-document.querySelector("#app").innerHTML = `
-<section id="center">
-  <div class="hero">
-    <img src="${heroImg}" class="base" width="170" height="179">
-    <img src="${javascriptLogo}" class="framework" alt="JavaScript logo"/>
-    <img src="${viteLogo}" class="vite" alt="Vite logo" />
-  </div>
-  <div>
-    <h1>Get started</h1>
-    <p>Edit <code>src/main.js</code> and save to test <code>HMR</code></p>
-  </div>
-  <button id="counter" type="button" class="counter"></button>
-</section>
+let tileX = 0
+let currentTileHeight = 200;
+let randomHeight = Math.floor((Math.random()*3)+ 1);
+let playerHeight = 200;
+let scroll = true;
+let nextTileHeight;
+let myScore = 0;
+let useGravity = true;
+let canJump = true;
+let floating = false;
+let pause = false;
 
-<div class="ticks"></div>
+if (randomHeight === 1) {
+    nextTileHeight = 150;
+} else if (randomHeight === 2) {
+    nextTileHeight = 200;
+} else if (randomHeight === 3) {
+    nextTileHeight = 250;
+};
 
-<section id="next-steps">
-  <div id="docs">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#documentation-icon"></use></svg>
-    <h2>Documentation</h2>
-    <p>Your questions, answered</p>
-    <ul>
-      <li>
-        <a href="https://vite.dev/" target="_blank">
-          <img class="logo" src="${viteLogo}" alt="" />
-          Explore Vite
-        </a>
-      </li>
-      <li>
-        <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-          <img class="button-icon" src="${javascriptLogo}" alt="">
-          Learn more
-        </a>
-      </li>
-    </ul>
-  </div>
-  <div id="social">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#social-icon"></use></svg>
-    <h2>Connect with us</h2>
-    <p>Join the Vite community</p>
-    <ul>
-      <li><a href="https://github.com/vitejs/vite" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#github-icon"></use></svg>GitHub</a></li>
-      <li><a href="https://chat.vite.dev/" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#discord-icon"></use></svg>Discord</a></li>
-      <li><a href="https://x.com/vite_js" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#x-icon"></use></svg>X.com</a></li>
-      <li><a href="https://bsky.app/profile/vite.dev" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#bluesky-icon"></use></svg>Bluesky</a></li>
-    </ul>
-  </div>
-</section>
+let firstTile = function() {
+    //generate the first tile
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, 800, 400);
+    ctx.fillStyle = '#000050';
+    ctx.fillRect(tileX, 400 - currentTileHeight, 800, currentTileHeight);
+    if (tileX <= 0) {
+        nextTile();
+    };
+    if (tileX === -800) {
+        //reset tiles
+        tileX = 0
+        randomHeight = Math.floor((Math.random()*3)+ 1);
+        if (randomHeight === 1) {
+            nextTileHeight = 150;
+        } else if (randomHeight === 2) {
+            nextTileHeight = 200;
+        } else if (randomHeight === 3) {
+            nextTileHeight = 250;
+        };
+    };
+    if (tileX === -751) {
+        currentTileHeight = nextTileHeight;
+        //crash
+        if (playerHeight < nextTileHeight) {
+            scroll = false;
+        };
+    };
+};
 
-<div class="ticks"></div>
-<section id="spacer"></section>
-`;
+let nextTile = function() {
+    //generate next tile
+    ctx.fillStyle = '#000050';
+    ctx.fillRect(tileX + 800, 400 - nextTileHeight, 800, nextTileHeight);
+}
 
-setupCounter(document.querySelector("#counter"));
+let playerTile = function() {
+    //create player
+    ctx.fillStyle = '#00ED00'
+    ctx.fillRect(25, 400 - playerHeight - 25, 25, 25);
+};
+
+let gravity = function() {
+    //create gravity
+    if (useGravity === true) {
+        if (currentTileHeight < playerHeight) {
+            playerHeight = playerHeight - 5;
+            floating = true;
+        } else {
+            floating = false
+        };
+    };
+    if (floating === false) {
+        canJump = true;
+    };
+};
+
+let score = function() {
+    //add to score
+    ctx.font = "20px Courier";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.fillStyle = "White";
+    ctx.fillText("Score: " + myScore, 0, 0);
+    myScore++;
+};
+
+let key = function() {
+    //make the player jump
+    $("body").keydown(function (event) {
+        let letter = event.key;
+
+        if (letter === 'ArrowUp') {
+            if (canJump === true) {
+                //jump
+                canJump = false;
+                useGravity = false;
+                playerHeight = playerHeight + 150;
+                setTimeout(reGravity, 125);
+            };
+        };
+        if (letter === ' ') {
+            if (pause === false) {
+                pause = true;
+                scroll = false;
+            } else {
+                pause = false;
+                scroll = true;
+            };
+        };
+    });
+};
+
+let reGravity = function() {
+    useGravity = true;
+};
+
+let tick = function() {
+    if (scroll === true) {
+        //create the tick
+        firstTile();
+        playerTile();
+        gravity();
+        score();
+        key();
+        tileX = tileX - 1;
+        setTimeout(tick, 0.1);
+    } else if (pause === true) {
+        setTimeout(tick, 0.1);
+    } else {
+        //stop game
+        ctx.font = "145px Courier";
+        ctx.fillStyle = "Red";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("GAME OVER", 400, 200);
+    };
+};
+
+tick();
