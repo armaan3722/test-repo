@@ -7,7 +7,7 @@ export default {
 	build: {
 		rollupOptions: {
 			input: {
-				game1: "game-1/index.html",
+				game1: "/game-1/",
 			},
 		},
 	},
