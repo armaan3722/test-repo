@@ -3,14 +3,5 @@ import { qrcode } from "vite-plugin-qrcode";
 
 export default {
 	plugins: [Inspect(), qrcode()],
-
-	base: "/test-repo/game-1/",
-
-	build: {
-		rollupOptions: {
-			input: {
-				game1: "game-1/index.html",
-			},
-		},
-	},
+	base: "/test-repo/"
 };
